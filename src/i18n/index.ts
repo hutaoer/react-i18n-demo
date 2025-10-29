@@ -1,30 +1,67 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import HttpBackend from 'i18next-http-backend';
 
-i18n
-  .use(HttpBackend)
-  .use(initReactI18next)
-  .init({
-    lng: 'zh_CN', // 默认语言
-    fallbackLng: 'zh_CN',
+// 从远程加载语言资源
+const loadRemoteTranslations = async () => {
+  try {
+    const response = await fetch('https://vision.xyb2b.com/black_test/prod/lang/data.json');
+    // 添加3s的延迟
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    const data = await response.json();
+    console.log('Loaded remote translations:', data);
     
-    interpolation: {
-      escapeValue: false, // React 已经转义，不需要再次转义
-    },
-    
-    backend: {
-      loadPath: 'https://vision.xyb2b.com/black_test/prod/lang/data.json',
-      parse: (data: string) => {
-        const parsed = JSON.parse(data);
-        return parsed;
+    // 转换数据格式：将 { zh_CN: {...} } 转换为 { zh_CN: { translation: {...} } }
+    const resources: Record<string, { translation: Record<string, string> }> = {};
+    Object.keys(data).forEach(lng => {
+      if (data[lng] && Object.keys(data[lng]).length > 0) {
+        resources[lng] = {
+          translation: data[lng]
+        };
       }
-    },
+    });
     
-    react: {
-      useSuspense: false
-    }
-  });
+    console.log('Formatted resources:', resources);
+    return resources;
+  } catch (error) {
+    console.error('Failed to load remote translations:', error);
+    throw error;
+  }
+};
+
+// 初始化 i18n（完全使用远程数据）
+const initI18n = async () => {
+  try {
+    const resources = await loadRemoteTranslations();
+    
+    await i18n
+      .use(initReactI18next)
+      .init({
+        lng: 'zh_CN',
+        fallbackLng: 'zh_CN',
+        
+        resources: resources,
+        
+        interpolation: {
+          escapeValue: false,
+        },
+        
+        react: {
+          useSuspense: false
+        }
+      });
+    
+    console.log('i18n initialized with remote resources');
+    console.log('Current language:', i18n.language);
+    console.log('Test translation:', i18n.t('title'));
+    return true;
+  } catch (error) {
+    console.error('Failed to initialize i18n:', error);
+    throw error;
+  }
+};
+
+// 创建初始化 Promise
+export const i18nReady = initI18n();
 
 export default i18n;
 
