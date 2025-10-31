@@ -4,6 +4,26 @@ import LanguageSwitcher from './components/LanguageSwitcher';
 import i18n from './i18n';
 import './App.css';
 
+// Test 命名空间组件
+const TestNamespace = () => {
+  const { t } = useTranslation('test');
+  return (
+    <div style={{ padding: '10px', background: '#e6f7ff', borderRadius: '4px', marginBottom: '10px' }}>
+      <strong>Test 命名空间:</strong> {t('title')} - {t('greeting_morning')}
+    </div>
+  );
+};
+
+// Common 命名空间组件
+const CommonNamespace = () => {
+  const { t } = useTranslation('common');
+  return (
+    <div style={{ padding: '10px', background: '#f6ffed', borderRadius: '4px' }}>
+      <strong>Common 命名空间:</strong> {t('common')} {t('title')}
+    </div>
+  );
+};
+
 function App() {
   const { t, ready } = useTranslation();
 
@@ -56,19 +76,33 @@ function App() {
           borderRadius: '8px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
         }}>
-          <h2 style={{ marginTop: 0 }}>使用说明</h2>
-          <ul>
-            <li>点击上方按钮切换语言</li>
-            <li>语言切换无需刷新页面</li>
-            <li>语言资源完全从远程 URL 加载</li>
-            <li>当前支持中文和英文</li>
-          </ul>
+          <h2 style={{ marginTop: 0 }}>命名空间演示</h2>
+          
+          <div style={{ marginBottom: '20px' }}>
+            <h3>Test 命名空间（默认）:</h3>
+            <p>标题: {t('title', { ns: 'test' })}</p>
+            <p>问候: {t('greeting_morning', { ns: 'test' })}</p>
+          </div>
+          
+          <div style={{ marginBottom: '20px' }}>
+            <h3>Common 命名空间:</h3>
+            <p>标题: {t('title', { ns: 'common' })}</p>
+            <p>问候: {t('greeting_morning', { ns: 'common' })}</p>
+          </div>
+          
+          <div style={{ marginBottom: '20px' }}>
+            <h3>使用 useTranslation 指定命名空间:</h3>
+            <TestNamespace />
+            <CommonNamespace />
+          </div>
           
           <div style={{ marginTop: '20px', padding: '10px', background: '#f0f0f0', borderRadius: '4px' }}>
             <strong>调试信息：</strong><br/>
             当前语言: {i18n.language}<br/>
-            title 翻译: {t('title')}<br/>
-            greeting_morning 翻译: {t('greeting_morning')}
+            可用命名空间: {Array.isArray(i18n.options.ns) ? i18n.options.ns.join(', ') : i18n.options.ns}<br/>
+            默认命名空间: {i18n.options.defaultNS}<br/>
+            title 翻译 (test): {t('title', { ns: 'test' })}<br/>
+            title 翻译 (common): {t('title', { ns: 'common' })}
           </div>
         </div>
       </div>
